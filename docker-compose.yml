@@ -7,3 +7,8 @@ services:
       - .:/app
     environment:
       - PYTHONUNBUFFERED=1
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_EXPIRATION_SECONDS=${JWT_EXPIRATION_SECONDS}
+    env_file:
+      - .env
