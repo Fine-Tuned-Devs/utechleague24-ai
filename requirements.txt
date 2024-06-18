@@ -1,6 +1,8 @@
 fastapi
 uvicorn[standard]
 langchain
+pyjwt~=2.8.0
+passlib[bcrypt]~=1.7.4
 motor~=3.4.0
 pydantic~=2.7.4
 pymongo~=4.7.3
