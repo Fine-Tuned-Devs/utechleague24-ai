@@ -1,5 +1,10 @@
 import os
 
+import dotenv
+
+dotenv_path = dotenv.find_dotenv(filename='.env', raise_error_if_not_found=True)
+dotenv.load_dotenv(dotenv_path=dotenv_path)
+
 
 class JwtSettings:
     SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
