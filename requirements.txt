@@ -1,3 +1,6 @@
 fastapi
 uvicorn[standard]
 langchain
+motor~=3.4.0
+pydantic~=2.7.4
+pymongo~=4.7.3
