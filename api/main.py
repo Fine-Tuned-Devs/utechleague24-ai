@@ -14,7 +14,7 @@ async def on_startup():
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the FastAPI and LangChain application"}
+    return {"message": "Welcome to the FastAPI and RAG application"}
 
 
 @app.post("/process/", dependencies=[Depends(get_current_user)])
