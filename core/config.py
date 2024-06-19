@@ -2,7 +2,7 @@ import os
 
 import dotenv
 
-dotenv_path = dotenv.find_dotenv(filename='.env', raise_error_if_not_found=True)
+dotenv_path = dotenv.find_dotenv(filename='.env', raise_error_if_not_found=False)
 dotenv.load_dotenv(dotenv_path=dotenv_path)
 
 
