@@ -9,3 +9,7 @@ class TokenRequest(BaseModel):
 class RegisterRequest(BaseModel):
     username: str
     password: str
+
+
+class ProcessRequest(BaseModel):
+    input_text: str

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from api.models.requests import ProcessRequest
 from application.langchain_app import process_text
 from api.auth import get_current_user
 from api.auth import router as auth_router
@@ -18,8 +19,8 @@ def read_root():
 
 
 @app.post("/process/", dependencies=[Depends(get_current_user)])
-def process(input_text: str):
-    result = process_text(input_text)
+def process(input_data: ProcessRequest):
+    result = process_text(input_data.input_text)
     return {"processed_text": result}
 
 
