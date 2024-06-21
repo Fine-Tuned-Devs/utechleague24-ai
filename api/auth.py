@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from core.config import jwt_settings
 from core.security import verify_password, create_access_token, decode_access_token
-from db.repositories.user import get_user_by_username, create_user
+from db.repositories.user_repository import get_user_by_username, create_user
 from api.models.requests import TokenRequest, RegisterRequest
 
 router = APIRouter()

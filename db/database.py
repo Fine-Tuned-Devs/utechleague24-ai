@@ -5,6 +5,7 @@ client = AsyncIOMotorClient(mongodb_settings.MONGODB_URL)
 database = client[mongodb_settings.MONGODB_DATABASE]
 
 users_collection = database.get_collection("users")
+messages_collection = database.get_collection("messages")
 
 
 # Startup tasks
