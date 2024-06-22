@@ -5,6 +5,7 @@ from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 
 from application.pinecone_lib import PineconeHelper
 from db.repositories.text_file_repository import find_text_by_title
+from db.repositories.user_repository import get_last_n_messages, join_messages
 
 # Set environment variables for API keys and endpoints
 os.environ["AZURE_OPENAI_API_KEY"] = "70acd5849bdd4aaaa8560815c4d929de"
@@ -92,7 +93,7 @@ def get_best_fit(prompt: str):
     return highest_scoring_match_id
 
 
-def get_best_fit_user_idx(prompt: str,username):
+def get_best_fit_user_idx(prompt: str, username):
     vector = utils.process_text_and_get_embeddings(prompt)
     score = ph.query_vector("username", vector, 3, 3072)
     highest_scoring_match_id = ""
@@ -105,12 +106,21 @@ def get_best_fit_user_idx(prompt: str,username):
     return highest_scoring_match_id
 
 
-async def process_user_prompt(prompt: str, user_name: str,message_id: str):
-    #ph.create_user_index(user_name+"--s--"+str(message_id), 3072)
+def truncate_history(conversation_history, max_tokens=4096):
+    total_tokens = 0
+    truncated_history = []
+    for message in reversed(conversation_history):
+        message_tokens = len(message.split()) + 1
+        total_tokens += message_tokens
+        if total_tokens > max_tokens:
+            break
+        truncated_history.insert(0, message)
+    return truncated_history
+
+
+async def process_user_prompt(prompt: str, user_name: str):
+    history_revrsed = truncate_history(join_messages(await get_last_n_messages(user_name, 2)))
     best_fit = get_best_fit(prompt)
-    #best_fit_user_idx = get_best_fit_user_idx(prompt, user_name)
-    #user_id, message_id = best_fit.split("--s--")
-    user_context=""
     file = files_config[best_fit]
     context_f = (await find_text_by_title(file)).content
     """
@@ -123,14 +133,25 @@ async def process_user_prompt(prompt: str, user_name: str,message_id: str):
     Returns:
         str: The generated response.
     """
-    prompt_template = """You are a customer support representative at Jawwal, a leading mobile network provider. Your primary role is to assist customers with their inquiries, ensuring they receive accurate and helpful responses. You should always maintain a friendly, professional, and empathetic tone. Use your knowledge and available resources to address their concerns effectively. If additional information is required, ask the customer politely to provide it. Always aim to make the customer feel valued and understood. The answer must be straight with no additional details.The answer should be 30 words or less.
- 
-    Context: {context}
-    Customer's Question: {user_prompt}
- 
-    Please provide a detailed and helpful response to the customer.
-    """
-    formatted_prompt = prompt_template.format(user_prompt=prompt, context=context_f+"---"+user_context)
+    prompt_template = """ Prompt Template:
+You are a customer support representative at Jawwal, a leading mobile network provider. Your role involves assisting customers with their inquiries, providing accurate and helpful responses. Maintain a friendly, professional, and empathetic tone throughout the interaction. Use your knowledge and resources effectively to address customer concerns. If additional information is needed, request it politely from the customer. Aim to make every customer feel valued and understood.
+
+- Keep your response concise, aiming for no more than 30 words.
+- Refer to conversation history when relevant to provide context-specific support.
+- If a topic from past interactions is relevant to the current question, incorporate that information into your response.
+
+Template Details:
+Context: {context}
+
+Conversation History: {conversation_history}
+
+Customer's Question: {user_prompt}
+
+Your Task:
+Provide a clear, concise, and relevant response based on the customer’s question and the provided context and history.
+"""
+
+    formatted_prompt = prompt_template.format(user_prompt=prompt,conversation_history=history_revrsed, context=context_f)
     message = HumanMessage(content=formatted_prompt)
 
     result = await gpt.ainvoke([message])

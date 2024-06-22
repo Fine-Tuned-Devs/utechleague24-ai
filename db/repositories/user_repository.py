@@ -66,5 +66,5 @@ async def get_first_n_messages(username: str, n: int) -> List[Message]:
     return all_messages[-n:]  # Get the first n messages
 
 
-async def join_messages(messages: List[Message]) -> str:
+def join_messages(messages: List[Message]) -> str:
     return "\n".join(message.text for message in messages)
