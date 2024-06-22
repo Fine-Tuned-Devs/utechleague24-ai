@@ -69,3 +69,8 @@ async def get_first_n_messages(username: str, n: int) -> List[Message]:
 
 def join_messages(messages: List[Message]) -> str:
     return "\n".join(f"{'user' if message.is_user else 'system'}: {message.text}" for message in messages)
+
+
+async def delete_all_messages() -> int:
+    result = await messages_collection.delete_many({})
+    return result.deleted_count

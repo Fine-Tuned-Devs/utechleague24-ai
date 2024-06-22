@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from core.config import jwt_settings
 from core.security import verify_password, create_access_token, decode_access_token
-from db.repositories.user_repository import get_user_by_username, create_user
+from db.repositories.user_repository import get_user_by_username, create_user, delete_all_messages
 from api.models.requests import TokenRequest, RegisterRequest
 
 router = APIRouter()
@@ -37,6 +37,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(token_request: TokenRequest):
+    await delete_all_messages()
     user = await authenticate_user(token_request.username, token_request.password)
     if not user:
         raise HTTPException(
