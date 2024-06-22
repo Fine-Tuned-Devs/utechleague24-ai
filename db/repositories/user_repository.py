@@ -71,6 +71,6 @@ def join_messages(messages: List[Message]) -> str:
     return "\n".join(f"{'user' if message.is_user else 'system'}: {message.text}" for message in messages)
 
 
-async def delete_all_messages() -> int:
-    result = await messages_collection.delete_many({})
+async def delete_messages_by_sender(username: str) -> int:
+    result = await messages_collection.delete_many({"sender": username})
     return result.deleted_count
