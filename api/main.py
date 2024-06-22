@@ -7,7 +7,7 @@ from api.auth import get_current_user
 from api.auth import router as auth_router
 from db.database import initialize_database
 from db.models.user import User
-from db.repositories.user_repository import create_message
+from db.repositories.user_repository import create_message, get_last_n_messages
 
 app = FastAPI()
 
@@ -33,8 +33,13 @@ def read_root():
 @app.post("/process/")
 async def process(input_data: ProcessRequest, user: User = Depends(get_current_user)):
     message_id = await create_message(user.username, input_data.input_text)
-    result = await process_user_prompt(input_data.input_text, user.username, message_id)
+    result = await process_user_prompt(input_data.input_text, user.username)
     return {"processed_text": result}
+
+
+@app.get("/user/last_messages/{n}")
+async def get_last_messages(n: int, user: User = Depends(get_current_user)):
+    return {"last_messages": await get_last_n_messages(user.username, n)}
 
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])

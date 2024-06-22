@@ -52,7 +52,8 @@ async def create_message(username: str, content: str) -> str:
 
 async def get_all_messages_by_username(username: str) -> List[Message]:
     messages = await messages_collection.find({"sender": username}).sort("createdAt", -1).to_list(length=None)
-    return [Message(**message) for message in messages]
+    return [Message(**{**message, 'messageId': str(message['_id']), '_id': str(message['_id'])}) for message in
+            messages]
 
 
 async def get_last_n_messages(username: str, n: int) -> List[Message]:
@@ -63,3 +64,7 @@ async def get_last_n_messages(username: str, n: int) -> List[Message]:
 async def get_first_n_messages(username: str, n: int) -> List[Message]:
     all_messages = await get_all_messages_by_username(username)
     return all_messages[-n:]  # Get the first n messages
+
+
+async def join_messages(messages: List[Message]) -> str:
+    return "\n".join(message.text for message in messages)
