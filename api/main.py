@@ -27,7 +27,7 @@ async def on_startup():
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the FastAPI and RAG backend application"}
+    return {"message": "Welcome"}
 
 
 @app.post("/process/")
