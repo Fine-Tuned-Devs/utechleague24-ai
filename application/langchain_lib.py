@@ -122,6 +122,7 @@ async def process_user_prompt(prompt: str, user_name: str):
     history_revrsed = truncate_history(join_messages(await get_last_n_messages(user_name, 2)))
     best_fit = get_best_fit(prompt)
     file = files_config[best_fit]
+    source = sources[best_fit]
     context_f = (await find_text_by_title(file)).content
     """
     Process the user's prompt and generate a response using GPT-3.
@@ -151,14 +152,22 @@ Your Task:
 Provide a clear, concise, and relevant response based on the customer’s question and the provided context and history.
 """
 
-    formatted_prompt = prompt_template.format(user_prompt=prompt,conversation_history=history_revrsed, context=context_f)
+    formatted_prompt = prompt_template.format(user_prompt=prompt, conversation_history=history_revrsed,
+                                              context=context_f)
     message = HumanMessage(content=formatted_prompt)
 
     result = await gpt.ainvoke([message])
-    return {"result": result, "file": file}
+    return {"result": result, "source": source}
 
 
 files_config = {"files-vector-0-0": "ESim", "files-vector-1-1": "Internet Packages",
                 "files-vector-1-0": "Internet Packages",
                 "files-vector-2-0": "Missed Call Alert", "files-vector-3-0": "Parental control",
                 "files-vector-4-0": "Ranili"}
+
+sources = {"files-vector-0-0": "https://drive.google.com/file/d/1nxm5jH11UnL26hXK3_wm3P1DSXqWbVFA/view",
+           "files-vector-1-1": "https://drive.google.com/file/d/14BVangb9i4MSkc0b7fuuqTmozxP2rcKi/view",
+           "files-vector-1-0": "https://drive.google.com/file/d/14BVangb9i4MSkc0b7fuuqTmozxP2rcKi/view",
+           "files-vector-2-0": "https://drive.google.com/file/d/1-gsFIxo0vuo4SUghdNQvaAt3ccpdUfIj/view",
+           "files-vector-3-0": "https://drive.google.com/file/d/1-gsFIxo0vuo4SUghdNQvaAt3ccpdUfIj/view",
+           "files-vector-4-0": "https://drive.google.com/file/d/1-wU9lPl0ZufFyU9jBMNh1V4OcAUx3lIl/view"}
