@@ -121,6 +121,9 @@ def truncate_history(conversation_history, max_tokens=4096):
 async def process_user_prompt(prompt: str, user_name: str):
     history_revrsed = truncate_history(join_messages(await get_last_n_messages(user_name, 2)))
     best_fit = get_best_fit(prompt)
+    if best_fit is None or best_fit['id'] not in files_config:
+        assistant_reply = "I'm sorry, I don't have the information you need. Please contact our live support for further assistance."
+        return {"result": assistant_reply, "source": None}
     file = files_config[best_fit]
     source = sources[best_fit]
     context_f = (await find_text_by_title(file)).content
