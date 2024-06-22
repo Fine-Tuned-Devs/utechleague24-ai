@@ -1,4 +1,6 @@
 from fastapi import FastAPI, Depends
+from starlette.middleware.cors import CORSMiddleware
+
 from api.models.requests import ProcessRequest
 from application.langchain_lib import process_user_prompt
 from api.auth import get_current_user
@@ -8,6 +10,14 @@ from db.models.user import User
 from db.repositories.user_repository import create_message
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 
 @app.on_event("startup")
