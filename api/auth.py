@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from datetime import timedelta
@@ -36,17 +38,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(token_request: TokenRequest):
-    user = await authenticate_user(token_request.username, token_request.password)
-    await delete_messages_by_sender(user.username);
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+async def login_for_access_token():
+    # Generate a unique username using UUID
+    unique_username = f"user_{uuid4()}"
+    # For demonstration, we use a fixed password pattern, could be randomized similarly
+    password = "defaultPassword123"
+
+    # Create a new user with the generated unique username and password
+    await create_user(unique_username, password)
+
+    # Delete messages for this user, though they shouldn't have any
+    await delete_messages_by_sender(unique_username)
+
+    # Create token with short expiration for temporary access
     access_token_expires = timedelta(seconds=jwt_settings.EXPIRATION_SECONDS)
-    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"sub": unique_username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
