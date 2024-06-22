@@ -92,10 +92,27 @@ def get_best_fit(prompt: str):
     return highest_scoring_match_id
 
 
-async def process_user_prompt(prompt: str, user_name: str):
+def get_best_fit_user_idx(prompt: str,username):
+    vector = utils.process_text_and_get_embeddings(prompt)
+    score = ph.query_vector("username", vector, 3, 3072)
+    highest_scoring_match_id = ""
+    highest_scoring_match = None
+    for match in score.matches:
+        # If highest_scoring_match is None or current match's score is higher, update it
+        if highest_scoring_match is None or match['score'] > highest_scoring_match['score']:
+            highest_scoring_match = match
+            highest_scoring_match_id = match["id"]
+    return highest_scoring_match_id
+
+
+async def process_user_prompt(prompt: str, user_name: str,message_id: str):
+    #ph.create_user_index(user_name+"--s--"+str(message_id), 3072)
     best_fit = get_best_fit(prompt)
-    file=files_config[best_fit]
-    context_f= (await find_text_by_title(file)).content
+    #best_fit_user_idx = get_best_fit_user_idx(prompt, user_name)
+    #user_id, message_id = best_fit.split("--s--")
+    user_context=""
+    file = files_config[best_fit]
+    context_f = (await find_text_by_title(file)).content
     """
     Process the user's prompt and generate a response using GPT-3.
 
@@ -106,20 +123,21 @@ async def process_user_prompt(prompt: str, user_name: str):
     Returns:
         str: The generated response.
     """
-    prompt_template = """You are a customer support representative at Jawwal, a leading mobile network provider. Your primary role is to assist customers with their inquiries, ensuring they receive accurate and helpful responses. You should always maintain a friendly, professional, and empathetic tone. Use your knowledge and available resources to address their concerns effectively. If additional information is required, ask the customer politely to provide it. Always aim to make the customer feel valued and understood. The answer must be straight with no additional details.
+    prompt_template = """You are a customer support representative at Jawwal, a leading mobile network provider. Your primary role is to assist customers with their inquiries, ensuring they receive accurate and helpful responses. You should always maintain a friendly, professional, and empathetic tone. Use your knowledge and available resources to address their concerns effectively. If additional information is required, ask the customer politely to provide it. Always aim to make the customer feel valued and understood. The answer must be straight with no additional details.The answer should be 30 words or less.
  
     Context: {context}
     Customer's Question: {user_prompt}
  
     Please provide a detailed and helpful response to the customer.
     """
-    formatted_prompt = prompt_template.format(user_prompt=prompt,context=context_f)
+    formatted_prompt = prompt_template.format(user_prompt=prompt, context=context_f+"---"+user_context)
     message = HumanMessage(content=formatted_prompt)
 
     result = await gpt.ainvoke([message])
     return {"result": result, "file": file}
 
 
-files_config = {"files-vector-0-0": "ESim", "files-vector-1-1": "Internet Packages","files-vector-1-0": "Internet Packages",
+files_config = {"files-vector-0-0": "ESim", "files-vector-1-1": "Internet Packages",
+                "files-vector-1-0": "Internet Packages",
                 "files-vector-2-0": "Missed Call Alert", "files-vector-3-0": "Parental control",
                 "files-vector-4-0": "Ranili"}
