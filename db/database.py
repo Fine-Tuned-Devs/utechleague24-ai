@@ -16,4 +16,5 @@ async def initialize_database():
 
 async def create_indexes():
     await users_collection.create_index("username", unique=True)
+    await messages_collection.create_index("sender", unique=False)
     await text_files_collection.create_index("title", unique=True)

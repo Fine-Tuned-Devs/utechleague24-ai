@@ -5,6 +5,7 @@ from api.auth import get_current_user
 from api.auth import router as auth_router
 from db.database import initialize_database
 from db.models.user import User
+from db.repositories.user_repository import create_message
 
 app = FastAPI()
 
@@ -21,7 +22,8 @@ def read_root():
 
 @app.post("/process/")
 async def process(input_data: ProcessRequest, user: User = Depends(get_current_user)):
-    result = await process_user_prompt(input_data.input_text, user.username)
+    message_id = await create_message(user.username, input_data.input_text)
+    result = await process_user_prompt(input_data.input_text, user.username, message_id)
     return {"processed_text": result}
 
 
