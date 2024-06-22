@@ -35,11 +35,12 @@ async def create_user(username: str, password: str) -> str:
     return str(result.inserted_id)
 
 
-async def create_message(username: str, content: str) -> str:
+async def create_message(username: str, content: str, is_user: bool = True) -> str:
     message_dict = {
         "messageId": str(ObjectId()),
         "sender": username,
         "text": content,
+        "is_user": is_user,
         "createdAt": datetime.utcnow(),
         "likes": 0,
         "dislikes": 0,
@@ -67,4 +68,4 @@ async def get_first_n_messages(username: str, n: int) -> List[Message]:
 
 
 def join_messages(messages: List[Message]) -> str:
-    return "\n".join(message.text for message in messages)
+    return "\n".join(f"{'user' if message.is_user else 'system'}: {message.text}" for message in messages)

@@ -32,8 +32,9 @@ def read_root():
 
 @app.post("/process/")
 async def process(input_data: ProcessRequest, user: User = Depends(get_current_user)):
-    message_id = await create_message(user.username, input_data.input_text)
+    await create_message(user.username, input_data.input_text, True)
     result = await process_user_prompt(input_data.input_text, user.username)
+    await create_message(user.username, result['result'].content, False)
     return {"processed_text": result}
 
 

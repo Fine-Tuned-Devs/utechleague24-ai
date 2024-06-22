@@ -8,6 +8,7 @@ class Message(BaseModel):
     messageId: str = Field(default_factory=lambda: str(ObjectId()), alias='_id')
     sender: str
     text: str
+    is_user: bool = True
     createdAt: datetime
     likes: int = 0
     dislikes: int = 0
